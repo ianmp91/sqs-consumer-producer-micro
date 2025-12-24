@@ -1,0 +1,44 @@
+# makefiles.base
+
+# Define la ruta al wrapper de Gradle. 
+# Asumimos que 'gradlew' está en el mismo directorio que el Makefile principal.
+GRADLE_WRAPPER = ./gradlew
+
+# Definiciones de tareas comunes de Gradle como variables 'make'
+GRADLE_BUILD_TASK = build
+GRADLE_CLEAN_TASK = clean
+GRADLE_TEST_TASK = test
+GRADLE_PUBLISH_TASK = publishToMavenLocal
+GRADLE_BOOTRUN_TASK = bootRun
+GRADLE_BOOTJAR_TASK = bootJar
+
+# Variables de bandera (si las necesitas, por ejemplo, para pasar propiedades)
+# GRADLE_FLAGS = -PmyProperty=value
+
+.PHONY: gradle_build gradle_clean gradle_test gradle_publish gradle_bootRun gradle_bootJar
+
+# Reglas genéricas que usan las variables definidas
+
+gradle_build:
+	@echo "--- Ejecutando tarea de Gradle: $(GRADLE_BUILD_TASK) ---"
+	$(GRADLE_WRAPPER) $(GRADLE_BUILD_TASK) $(GRADLE_FLAGS)
+
+gradle_clean:
+	@echo "--- Ejecutando tarea de Gradle: $(GRADLE_CLEAN_TASK) ---"
+	$(GRADLE_WRAPPER) $(GRADLE_CLEAN_TASK) $(GRADLE_FLAGS)
+
+gradle_test:
+	@echo "--- Ejecutando tarea de Gradle: $(GRADLE_TEST_TASK) ---"
+	$(GRADLE_WRAPPER) $(GRADLE_TEST_TASK) $(GRADLE_FLAGS)
+
+gradle_publish:
+	@echo "--- Ejecutando tarea de Gradle: $(GRADLE_PUBLISH_TASK) ---"
+	$(GRADLE_WRAPPER) $(GRADLE_PUBLISH_TASK) $(GRADLE_FLAGS)
+
+gradle_bootRun:
+	@echo "--- Ejecutando tarea de Gradle: $(GRADLE_BOOTRUN_TASK) ---"
+	$(GRADLE_WRAPPER) $(GRADLE_BOOTRUN_TASK) $(GRADLE_FLAGS)
+
+gradle_bootJar:
+	@echo "--- Ejecutando tarea de Gradle: $(GRADLE_BOOTJAR_TASK) ---"
+	$(GRADLE_WRAPPER) $(GRADLE_BOOTJAR_TASK) $(GRADLE_FLAGS)

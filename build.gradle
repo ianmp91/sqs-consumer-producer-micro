@@ -1,0 +1,55 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example.sqsmicro'
+version = '0.1.0-SNAPSHOT'
+description = 'Example project for sqs - Spring Boot Microservice'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
+
+ext {
+	springCloudVersion = "4.0.0-M1"
+	springBootVersion = "4.0.0"
+	lombokVersion = "1.18.42"
+	sqsLibVersion = "0.1.1-SNAPSHOT"
+	bcpkixVersion = "1.82"
+}
+
+dependencies {
+
+	// Lombok (opcional, pero ayuda con getters/setters/constructores)
+	compileOnly("org.projectlombok:lombok:${lombokVersion}")
+	annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+
+	// Lib SQS
+	implementation("com.example.sqslib:sqs-consumer-producer-lib:${sqsLibVersion}")
+
+	// Bouncycastle bcpkix-jdk18on 1.82
+	implementation("org.bouncycastle:bcpkix-jdk18on:${bcpkixVersion}")
+
+	// Spring Boot Starter Web (Para los Controllers)
+	implementation("org.springframework.boot:spring-boot-starter:${springBootVersion}")
+	implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
+
+	// Test
+	testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+	testImplementation("io.awspring.cloud:spring-cloud-aws-starter-sqs:${springCloudVersion}")
+	testImplementation("org.mockito:mockito-core")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

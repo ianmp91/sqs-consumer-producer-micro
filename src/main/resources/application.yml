@@ -1,0 +1,27 @@
+server:
+  port: 8081
+logging:
+  level:
+    root: INFO # Mantiene librerías externas en INFO
+    com.example.sqsmicro: DEBUG
+spring:
+  application:
+    name: sqs-consumer-producer-micro
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    aws:
+      region:
+        static: us-east-1 # Una región arbitraria
+      # Configuración específica para SQS que apunta a ElasticMQ
+      sqs:
+        endpoint: ${SPRING_CLOUD_AWS_SQS_ENDPOINT:http://localhost:9324}
+      credentials:
+        # Credenciales dummy que cumplen con el requisito del SDK de AWS
+        access-key: dummy
+        secret-key: dummy
+cola:
+  aws:
+    sqs:
+      consumer: "cola-aws-sqs-1"
+      producer: "cola-aws-sqs-2"
