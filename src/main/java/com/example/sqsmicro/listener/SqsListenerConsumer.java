@@ -1,10 +1,15 @@
 package com.example.sqsmicro.listener;
 
+import com.example.sqslib.iata.DepartureArrivalType;
+import com.example.sqslib.iata.FlightLegIdentifierType;
 import com.example.sqslib.iata.FlightLegType;
 import com.example.sqslib.iata.IATAAIDXFlightLegNotifRQ;
 import com.example.sqslib.iata.IATAAIDXFlightLegRQ;
 import com.example.sqslib.iata.IATAAIDXFlightLegRS;
+import com.example.sqslib.iata.OperationTimeType;
+import com.example.sqslib.iata.OperationalStatusType;
 import com.example.sqslib.iata.SuccessType;
+import com.example.sqslib.iata.UsageType;
 import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.service.XmlService;
 import com.example.sqsmicro.records.MessageDto;
@@ -86,7 +91,7 @@ public class SqsListenerConsumer {
         response.setTransactionIdentifier(rq.getTransactionIdentifier());
 
         // Identificador único de este mensaje de respuesta
-        response.setTransactionStatusCode("Start"); // O "End" según el flujo
+        response.setTransactionStatusCode("Success"); // O "End" según el flujo
         response.setSequenceNmbr(BigInteger.ONE);
         response.setTarget(rq.getTarget());
 
@@ -105,11 +110,53 @@ public class SqsListenerConsumer {
 
         // Crear la info del vuelo (FlightLeg)
         // Nota: Como no pasaste la clase FlightLegType, asumo una estructura estándar IATA
-        FlightLegType leg = new FlightLegType();
+        FlightLegType flightLegType = new FlightLegType();
+        FlightLegIdentifierType legId = new FlightLegIdentifierType();
 
-        // Agregarlo a la lista (tu método getFlightLegs inicializa la lista si es null)
-        response.getFlightLegs().add(leg);
+        FlightLegIdentifierType.Airline airline = new FlightLegIdentifierType.Airline();
+        airline.setValue("SAO");
+        airline.setCodeContext("1234");
+        legId.setAirline(airline);
+        legId.setFlightNumber("1234");
 
+        FlightLegIdentifierType.ArrivalAirport arrivalAirport = new FlightLegIdentifierType.ArrivalAirport();
+        arrivalAirport.setValue("SAO");
+        arrivalAirport.setCodeContext("1234");
+        legId.setArrivalAirport(arrivalAirport);
+        FlightLegIdentifierType.DepartureAirport departureAirport = new FlightLegIdentifierType.DepartureAirport();
+        departureAirport.setValue("SCL");
+        departureAirport.setCodeContext("1234");
+        legId.setDepartureAirport(departureAirport);
+
+        flightLegType.setLegIdentifier(legId);
+
+        // --- B. Datos del Vuelo (LegData) ---
+        var legData = new FlightLegType.LegData();
+
+        // B.1 Estado Operativo (Ej. "Schuduled", "OffBlock", "Airborne")
+        var opStatus = new OperationalStatusType();
+        opStatus.setValue("SCL"); // Helper method abajo
+        opStatus.setCodeContext("Operational");
+        // JAXB suele inicializar listas con un get().add() en vez de set()
+        legData.getOperationalStatuses().add(opStatus);
+
+        // B.2 Tiempos (Ej. Scheduled Time of Departure)
+        var std = new OperationTimeType();
+        std.setTimeType("S"); // S = Scheduled
+        std.setOperationQualifier("TD"); // TD = Time of Departure
+        std.setValue("+2"); // La hora
+        legData.getOperationTimes().add(std);
+
+        // B.3 Recursos de Aeropuerto (Ej. Gate/Terminal)
+        var airportRes = new FlightLegType.LegData.AirportResources();
+        airportRes.setUsage(UsageType.PLANNED);
+        legData.getAirportResources().add(airportRes);
+
+        // Asignar LegData al FlightLeg
+        flightLegType.setLegData(legData);
+
+        // Agregarlo a la lista
+        response.getFlightLegs().add(flightLegType);
 
         // Marshalling y Encriptado (Para B)
         String xmlResponse = xmlService.toXml(response);
