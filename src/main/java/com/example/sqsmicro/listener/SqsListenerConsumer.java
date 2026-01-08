@@ -229,11 +229,11 @@ public class SqsListenerConsumer {
 
         FlightLegIdentifierType.ArrivalAirport arrivalAirport = new FlightLegIdentifierType.ArrivalAirport();
         arrivalAirport.setValue("GRU");
-        arrivalAirport.setCodeContext("1234");
+        arrivalAirport.setCodeContext("IATA");
         legId.setArrivalAirport(arrivalAirport);
         FlightLegIdentifierType.DepartureAirport departureAirport = new FlightLegIdentifierType.DepartureAirport();
         departureAirport.setValue("LAX");
-        departureAirport.setCodeContext("1234");
+        departureAirport.setCodeContext("IATA");
         legId.setDepartureAirport(departureAirport);
 
         flightLegType.setLegIdentifier(legId);
