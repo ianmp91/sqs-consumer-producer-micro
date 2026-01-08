@@ -93,7 +93,7 @@ public class SqsListenerConsumer {
 
         // Identificador único de este mensaje de respuesta
         response.setTransactionStatusCode("Success"); // O "End" según el flujo
-        response.setSequenceNmbr(BigInteger.ONE);
+        response.setSequenceNmbr(rq.getSequenceNmbr());
         response.setTarget(rq.getTarget());
 
         // ---------------------------------------------------------
@@ -115,17 +115,17 @@ public class SqsListenerConsumer {
         FlightLegIdentifierType legId = new FlightLegIdentifierType();
 
         FlightLegIdentifierType.Airline airline = new FlightLegIdentifierType.Airline();
-        airline.setValue("SAO");
-        airline.setCodeContext("1234");
+        airline.setValue("QR");
+        airline.setCodeContext("IATA");
         legId.setAirline(airline);
         legId.setFlightNumber("1234");
 
         FlightLegIdentifierType.ArrivalAirport arrivalAirport = new FlightLegIdentifierType.ArrivalAirport();
-        arrivalAirport.setValue("SAO");
+        arrivalAirport.setValue("GRU");
         arrivalAirport.setCodeContext("1234");
         legId.setArrivalAirport(arrivalAirport);
         FlightLegIdentifierType.DepartureAirport departureAirport = new FlightLegIdentifierType.DepartureAirport();
-        departureAirport.setValue("SCL");
+        departureAirport.setValue("LAX");
         departureAirport.setCodeContext("1234");
         legId.setDepartureAirport(departureAirport);
 
@@ -136,7 +136,7 @@ public class SqsListenerConsumer {
 
         // B.1 Estado Operativo (Ej. "Schuduled", "OffBlock", "Airborne")
         var opStatus = new OperationalStatusType();
-        opStatus.setValue("SCL"); // Helper method abajo
+        opStatus.setValue("Schuduled"); // Helper method abajo
         opStatus.setCodeContext("Operational");
         // JAXB suele inicializar listas con un get().add() en vez de set()
         legData.getOperationalStatuses().add(opStatus);
@@ -200,7 +200,7 @@ public class SqsListenerConsumer {
 
         // Identificador único de este mensaje de respuesta
         response.setTransactionStatusCode("Success"); // O "End" según el flujo
-        response.setSequenceNmbr(BigInteger.ONE);
+        response.setSequenceNmbr(rq.getSequenceNmbr());
         response.setTarget(rq.getTarget());
 
         // ---------------------------------------------------------
@@ -228,11 +228,11 @@ public class SqsListenerConsumer {
         legId.setFlightNumber("1234");
 
         FlightLegIdentifierType.ArrivalAirport arrivalAirport = new FlightLegIdentifierType.ArrivalAirport();
-        arrivalAirport.setValue("SAO");
+        arrivalAirport.setValue("GRU");
         arrivalAirport.setCodeContext("1234");
         legId.setArrivalAirport(arrivalAirport);
         FlightLegIdentifierType.DepartureAirport departureAirport = new FlightLegIdentifierType.DepartureAirport();
-        departureAirport.setValue("SCL");
+        departureAirport.setValue("LAX");
         departureAirport.setCodeContext("1234");
         legId.setDepartureAirport(departureAirport);
 
@@ -243,7 +243,7 @@ public class SqsListenerConsumer {
 
         // B.1 Estado Operativo (Ej. "Schuduled", "OffBlock", "Airborne")
         var opStatus = new OperationalStatusType();
-        opStatus.setValue("SCL"); // Helper method abajo
+        opStatus.setValue("Schuduled"); // Helper method abajo
         opStatus.setCodeContext("Operational");
         // JAXB suele inicializar listas con un get().add() en vez de set()
         legData.getOperationalStatuses().add(opStatus);
