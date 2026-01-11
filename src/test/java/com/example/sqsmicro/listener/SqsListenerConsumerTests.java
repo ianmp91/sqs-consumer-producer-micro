@@ -1,5 +1,6 @@
 package com.example.sqsmicro.listener;
 
+import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.service.XmlService;
 import com.example.sqsmicro.records.MessageDto;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.when;
 public class SqsListenerConsumerTests {
 
     @Mock
+    private FlightLegBuilder flightLegBuilder;
+
+    @Mock
     private DecryptEncryptMessageUtil decryptEncryptMessageUtil;
 
     @Mock
@@ -46,7 +50,8 @@ public class SqsListenerConsumerTests {
                 "cola-aws-sqs-2",
                 decryptEncryptMessageUtil,
                 sqsProducerService,
-                xmlService
+                xmlService,
+                flightLegBuilder
         );
     }
 

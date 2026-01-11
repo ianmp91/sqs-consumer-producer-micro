@@ -23,7 +23,7 @@ ext {
 	springCloudVersion = "4.0.0-M1"
 	springBootVersion = "4.0.0"
 	lombokVersion = "1.18.42"
-	sqsLibVersion = "0.1.2-SNAPSHOT"
+	sqsLibVersion = "0.1.3-SNAPSHOT"
 	bcpkixVersion = "1.82"
 }
 
