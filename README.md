@@ -1,77 +1,49 @@
 # Consumer/Producer Microservice (C)
 
-This service acts as the central processor. It reads encrypted messages, processes them, and notifies the result.
+## Airport-C Microservice (Consumer/Producer)
 
-## 🔄 Messaging Flow
+**Tech Stack:** Java 25, Gradle Groovy, Spring Boot 4, Spring AWS Cloud SQS.
 
-1. **Consume (Decryption):** Reads messages from the input queue.
-   * **Source:** `cola-aws-sqs-1`.
-   * **Security:** Uses the **Private Key (RSA)** to **DECRYPT** the payload and access the raw data.
-   * **Action:** Processes the business logic and **deletes** the message from the queue upon success.
+### Overview
+This microservice acts as both a consumer and a producer/listener within the distributed system. Its primary workflow involves:
 
-2. **Produce:** Sends the process result or the next task.
-   * **Destination:** `cola-aws-sqs-2` (to be read by Service B).
+1.  **Consuming:** It reads, processes, and deletes messages from `cola-aws-sqs-1`.
+2.  **Decryption:** Upon reading a message from `cola-aws-sqs-1`, it decrypts the content using its private key via the `decryptHybrid` method.
+3.  **Processing & Producing:**
+   * It utilizes the shared library `sqs-consumer-producer-lib` (A) to act as a producer.
+   * Once processing is complete, it generates a result or defines the next task.
+   * It wraps this data in a `MessageDto` and sends it to `cola-aws-sqs-2` for processing by the **Airlines-B** microservice.
+4.  **Security & Configuration:**
+   * It retrieves the **Airlines-B Public Key** from **Config-Server-D** via REST (using `ExternalConfigServer` + `RestClient`) to encrypt the outbound payload.
+   * It maintains its own Private Key locally for decrypting inbound messages.
+   * It fetches SQS queue configurations (Inbound: `cola-aws-sqs-1`, Outbound: `cola-aws-sqs-2`) from **Config-Server-D**.
 
-## 🛠 Requirements
+### Sequence Diagram
 
-* **OS:** macOS (Tested on Tahoe 26.1)
-* **Java:** JDK 25
-* **Infrastructure:** ElasticMQ (Docker)
-* **Internal Library:** `sqs-consumer-producer-lib` (A)
+```mermaid
+sequenceDiagram
+    autonumber
+    participant D as Config-Server-D
+    participant Q1 as cola-aws-sqs-1 (Inbound)
+    participant C as Airport-C
+    participant Q2 as cola-aws-sqs-2 (Outbound)
 
-## 🔑 Security Configuration
+    Note over C: Startup / Configuration Phase
+    C->>D: REST GET (ExternalConfigServer + RestClient)<br/>Fetch Queues & Airlines-B Public Key
+    D-->>C: Return Config & Public Key
 
-**IMPORTANT:** This service holds the **Private Key**. It must not be shared or uploaded to the repository if it is a production environment.
-
-For local development, ensure the key is available:
-
-```bash
-export DECRYPTION_PRIVATE_KEY_PATH=/path/to/private_key.pem
-```
-
-## 📦 Installation for Microservices
-
-Add the dependency to your `build.gradle` file (assuming this library is published in your local repository).
-
-```groovy
-repositories {
-   mavenLocal() // Add to the microservice
-   mavenCentral()
-}
-
-
-dependencies {
-   implementation 'com.example.sqslib:sqs-consumer-producer-lib:0.0.1-SNAPSHOT'
-}
-```
-
-## ⚙️ Configuration (application.yml)
-
-```yaml
-server:
-   port: 8082
-spring:
-   application:
-      name: sqs-consumer-producer-micro
-   main:
-      allow-bean-definition-overriding: true
-   cloud:
-      aws:
-         region:
-            static: us-east-1 # An arbitrary region
-         # Specific configuration for SQS pointing to ElasticMQ
-         sqs:
-            # Points to the ElasticMQ container port
-            endpoint: ${SPRING_CLOUD_AWS_SQS_ENDPOINT:http://localhost:9324}
-         credentials:
-            # Dummy credentials that satisfy the AWS SDK requirement
-            access-key: dummy
-            secret-key: dummy
-cola:
-   aws:
-      sqs:
-         consumer: "cola-aws-sqs-1"
-         producer: "cola-aws-sqs-2"
+    Note over C: Runtime Phase
+    C->>Q1: Poll/Read Message
+    activate C
+    Q1-->>C: Deliver Encrypted Message
+    
+    C->>C: decryptHybrid(payload) using Private Key
+    C->>C: Process Business Logic
+    C->>C: Create MessageDto & Encrypt using Airlines-B Public Key
+    
+    C->>Q2: Send Result/Next Task
+    C->>Q1: Acknowledge & Delete Message
+    deactivate C
 ```
 
 ## 🚀 Execution
