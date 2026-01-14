@@ -9,6 +9,6 @@ import java.util.Map;
 public record MessageDto(
         Map<String, String> metadata,
         String encryptedPayload,
-        String keyId,
+        String encryptedKey,
 		String uniqueFlightId
 ) {}

@@ -6,7 +6,7 @@ logging:
     com.example.sqsmicro: DEBUG
 spring:
   application:
-    name: sqs-consumer-producer-micro
+    name: airport-c
   main:
     allow-bean-definition-overriding: true
   cloud:
@@ -20,8 +20,3 @@ spring:
         # Credenciales dummy que cumplen con el requisito del SDK de AWS
         access-key: dummy
         secret-key: dummy
-cola:
-  aws:
-    sqs:
-      consumer: "cola-aws-sqs-1"
-      producer: "cola-aws-sqs-2"

@@ -6,6 +6,7 @@ import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.service.XmlService;
 import com.example.sqsmicro.records.MessageDto;
+import com.example.sqsmicro.service.ExternalConfigService;
 import com.example.sqsmicro.util.DecryptEncryptMessageUtil;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.extern.slf4j.Slf4j;
@@ -23,31 +24,33 @@ import java.util.Map;
 @Component
 public class SqsListenerConsumer {
 
-    private String colaAwsSqsProducer;
     private final DecryptEncryptMessageUtil decryptEncryptMessageUtil;
     private final SqsProducerService sqsProducerService;
     private final XmlService xmlService;
     private final FlightLegBuilder flightLegBuilder;
+    private final ExternalConfigService externalConfigService;
 
-    public SqsListenerConsumer(@Value("${cola.aws.sqs.producer}") String colaAwsSqsTwo,
-                               DecryptEncryptMessageUtil decryptEncryptMessageUtil,
+    public SqsListenerConsumer(DecryptEncryptMessageUtil decryptEncryptMessageUtil,
                                SqsProducerService sqsProducerService,
                                XmlService xmlService,
-                               FlightLegBuilder flightLegBuilder) {
-        this.colaAwsSqsProducer = colaAwsSqsTwo;
+                               FlightLegBuilder flightLegBuilder,
+                               ExternalConfigService externalConfigService) {
         this.decryptEncryptMessageUtil = decryptEncryptMessageUtil;
         this.sqsProducerService = sqsProducerService;
         this.xmlService = xmlService;
         this.flightLegBuilder = flightLegBuilder;
+        this.externalConfigService = externalConfigService;
     }
 
-    @SqsListener("${cola.aws.sqs.consumer}")
+    @SqsListener(queueNames = "#{@externalConfigService.getListeningQueue()}")
     public void processMessage(MessageDto messageDto) {
         try {
-
             log.info("Reads encrypted messages. Metadata: {} | EncryptedPayload: {}", messageDto.metadata(), messageDto.encryptedPayload());
             // 1. DecryptPayload
-            String decryptPayload = decryptEncryptMessageUtil.decryptHybrid(messageDto.encryptedPayload(), messageDto.keyId());
+            String targetQueue = externalConfigService.getQueueUrl();
+            String receiverPubKey = externalConfigService.getAirportPublicKey();
+            decryptEncryptMessageUtil.loadPublicKey(receiverPubKey);
+            String decryptPayload = decryptEncryptMessageUtil.decryptHybrid(messageDto.encryptedPayload(), messageDto.encryptedKey());
             // Log for tests without lobDebug
             log.debug("Decrypted payload message. Payload: {} ", decryptPayload);
 
@@ -56,8 +59,8 @@ public class SqsListenerConsumer {
 
             // 4. Procesar según el tipo (Switch Expression + Pattern Matching)
             switch (pojo) {
-                case IATAAIDXFlightLegRQ rq -> procesarFlightLegRQ(rq, messageDto);
-                case IATAAIDXFlightLegNotifRQ rq2 -> procesarFlightLegNotifRQ(rq2, messageDto);
+                case IATAAIDXFlightLegRQ rq -> procesarFlightLegRQ(rq, messageDto, targetQueue);
+                case IATAAIDXFlightLegNotifRQ rq2 -> procesarFlightLegNotifRQ(rq2, messageDto, targetQueue);
                 case null -> throw new IllegalArgumentException("Payload null");
                 default -> log.error("Message Type not supported: " + pojo.getClass());
             }
@@ -67,7 +70,7 @@ public class SqsListenerConsumer {
         }
     }
 
-    private void procesarFlightLegRQ(IATAAIDXFlightLegRQ rq, MessageDto messageDto) throws Exception {
+    private void procesarFlightLegRQ(IATAAIDXFlightLegRQ rq, MessageDto messageDto, String targetQueue) throws Exception {
         // 1. Instanciar la respuesta raíz
         var response = flightLegBuilder.buildFlightLegRs(rq, messageDto.metadata());
 
@@ -91,10 +94,10 @@ public class SqsListenerConsumer {
         );
         log.debug("Before preparing the SQS shipment. Metadata: {}", responseMeta);
         log.debug("Before preparing the SQS shipment. UniqueFlightId: {}", responseDto.uniqueFlightId());
-        sqsProducerService.send(colaAwsSqsProducer, responseDto);
+        sqsProducerService.send(targetQueue, responseDto);
     }
 
-    private void procesarFlightLegNotifRQ(IATAAIDXFlightLegNotifRQ rq, MessageDto messageDto) throws Exception {
+    private void procesarFlightLegNotifRQ(IATAAIDXFlightLegNotifRQ rq, MessageDto messageDto, String targetQueue) throws Exception {
         // 1. Instanciar la respuesta raíz
         var response = flightLegBuilder.buildFlightLegRsToNotifRq(rq, messageDto.metadata());
 
@@ -118,6 +121,6 @@ public class SqsListenerConsumer {
         );
         log.debug("Before preparing the SQS shipment. Metadata: {}", responseMeta);
         log.debug("Before preparing the SQS shipment. UniqueFlightId: {}", responseDto.uniqueFlightId());
-        sqsProducerService.send(colaAwsSqsProducer, responseDto);
+        sqsProducerService.send(targetQueue, responseDto);
     }
 }

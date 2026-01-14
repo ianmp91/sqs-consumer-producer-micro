@@ -4,6 +4,7 @@ import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.service.XmlService;
 import com.example.sqsmicro.records.MessageDto;
+import com.example.sqsmicro.service.ExternalConfigService;
 import com.example.sqsmicro.util.DecryptEncryptMessageUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,9 @@ import static org.mockito.Mockito.when;
 public class SqsListenerConsumerTests {
 
     @Mock
+    private ExternalConfigService externalConfigService;
+
+    @Mock
     private FlightLegBuilder flightLegBuilder;
 
     @Mock
@@ -47,29 +51,29 @@ public class SqsListenerConsumerTests {
         decryptEncryptMessageUtil = Mockito.mock(DecryptEncryptMessageUtil.class);
         sqsProducerService = Mockito.mock(SqsProducerService.class);
         sqsListenerConsumer = new SqsListenerConsumer(
-                "cola-aws-sqs-2",
                 decryptEncryptMessageUtil,
                 sqsProducerService,
                 xmlService,
-                flightLegBuilder
+                flightLegBuilder,
+                externalConfigService
         );
     }
 
     @Test
     void shouldDecryptProcessAndSendResponse() throws Exception {
-        /*String keyId = "keyId";
+        /*String encryptedKey = "encryptedKey";
         String xmlPayload = "<IATAAIDXFlightLegRS>some xml</IATAAIDXFlightLegRS>";
         MessageDto mesagge = new MessageDto(
                 Map.of("MESSAGE_TYPE", "IATAAIDXFlightLegRS"),
                 xmlPayload,
-                "keyId"
+                "encryptedKey"
         );
         DecryptEncryptMessageUtil.EncryptedMessageBundle encryptedMessageBundle =
-                new DecryptEncryptMessageUtil.EncryptedMessageBundle(xmlPayload, keyId);
-        when(decryptEncryptMessageUtil.decryptHybrid(xmlPayload, mesagge.keyId())).thenReturn(xmlPayload);
+                new DecryptEncryptMessageUtil.EncryptedMessageBundle(xmlPayload, encryptedKey);
+        when(decryptEncryptMessageUtil.decryptHybrid(xmlPayload, mesagge.encryptedKey())).thenReturn(xmlPayload);
         when(decryptEncryptMessageUtil.encryptHybridWithPublicKey(xmlPayload)).thenReturn(encryptedMessageBundle);
         sqsListenerConsumer.processMessage(mesagge);
-        verify(decryptEncryptMessageUtil).decryptHybrid(xmlPayload, mesagge.keyId());
+        verify(decryptEncryptMessageUtil).decryptHybrid(xmlPayload, mesagge.encryptedKey());
         verify(decryptEncryptMessageUtil).encryptHybridWithPublicKey(xmlPayload);
         verify(sqsProducerService).send(eq("cola-aws-sqs-2"), eq(mesagge));*/
     }
