@@ -6,11 +6,10 @@ import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.service.XmlService;
 import com.example.sqsmicro.records.MessageDto;
-import com.example.sqsmicro.service.ExternalConfigService;
+import com.example.sqsmicro.service.ConfigurationLoaderService;
 import com.example.sqsmicro.util.DecryptEncryptMessageUtil;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -28,27 +27,27 @@ public class SqsListenerConsumer {
     private final SqsProducerService sqsProducerService;
     private final XmlService xmlService;
     private final FlightLegBuilder flightLegBuilder;
-    private final ExternalConfigService externalConfigService;
+    private final ConfigurationLoaderService configurationLoaderService;
 
     public SqsListenerConsumer(DecryptEncryptMessageUtil decryptEncryptMessageUtil,
                                SqsProducerService sqsProducerService,
                                XmlService xmlService,
                                FlightLegBuilder flightLegBuilder,
-                               ExternalConfigService externalConfigService) {
+                               ConfigurationLoaderService configurationLoaderService) {
         this.decryptEncryptMessageUtil = decryptEncryptMessageUtil;
         this.sqsProducerService = sqsProducerService;
         this.xmlService = xmlService;
         this.flightLegBuilder = flightLegBuilder;
-        this.externalConfigService = externalConfigService;
+        this.configurationLoaderService = configurationLoaderService;
     }
 
-    @SqsListener(queueNames = "#{@externalConfigService.getListeningQueue()}")
+    @SqsListener(queueNames = "#{@configurationLoaderService.getListeningQueue()}")
     public void processMessage(MessageDto messageDto) {
         try {
             log.info("Reads encrypted messages. Metadata: {} | EncryptedPayload: {}", messageDto.metadata(), messageDto.encryptedPayload());
             // 1. DecryptPayload
-            String targetQueue = externalConfigService.getQueueUrl();
-            String receiverPubKey = externalConfigService.getAirportPublicKey();
+            String targetQueue = configurationLoaderService.getQueueUrl();
+            String receiverPubKey = configurationLoaderService.getAirportPublicKey();
             decryptEncryptMessageUtil.loadPublicKey(receiverPubKey);
             String decryptPayload = decryptEncryptMessageUtil.decryptHybrid(messageDto.encryptedPayload(), messageDto.encryptedKey());
             // Log for tests without lobDebug

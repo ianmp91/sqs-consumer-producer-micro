@@ -1,6 +1,7 @@
 package com.example.sqsmicro.service;
 
 import com.example.sqsmicro.records.ConfigServerResponse;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -14,20 +15,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author ian.paris
  * @since 2026-01-13
  */
-@Service("externalConfigService")
-public class ExternalConfigService {
+@Service("configurationLoaderService")
+public class ConfigurationLoaderService {
 
 	private final RestClient restClient;
-	// @Value("${config.server.url:http://localhost:8888}")
-	private final String configServerUrl = "http://localhost:8888";
-
 	// Caché en memoria para no saturar al Config Server
 	private Map<String, Object> configurationCache = new ConcurrentHashMap<>();
 
-	public ExternalConfigService() {
-		this.restClient = RestClient.builder()
-				.baseUrl(configServerUrl)
-				.build();
+	public ConfigurationLoaderService(@Qualifier("configRestClient") RestClient restClient) {
+		this.restClient = restClient;
 	}
 
 	@Scheduled(fixedRate = 600000)

@@ -3,8 +3,7 @@ package com.example.sqsmicro.listener;
 import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.service.XmlService;
-import com.example.sqsmicro.records.MessageDto;
-import com.example.sqsmicro.service.ExternalConfigService;
+import com.example.sqsmicro.service.ConfigurationLoaderService;
 import com.example.sqsmicro.util.DecryptEncryptMessageUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,12 +13,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author ian.paris
@@ -29,7 +25,7 @@ import static org.mockito.Mockito.when;
 public class SqsListenerConsumerTests {
 
     @Mock
-    private ExternalConfigService externalConfigService;
+    private ConfigurationLoaderService configurationLoaderService;
 
     @Mock
     private FlightLegBuilder flightLegBuilder;
@@ -55,7 +51,7 @@ public class SqsListenerConsumerTests {
                 sqsProducerService,
                 xmlService,
                 flightLegBuilder,
-                externalConfigService
+                configurationLoaderService
         );
     }
 
