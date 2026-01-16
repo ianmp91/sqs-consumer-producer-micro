@@ -18,3 +18,10 @@ spring:
         # Credenciales dummy que cumplen con el requisito del SDK de AWS
         access-key: dummy
         secret-key: dummy
+config:
+  server:
+    url: http://localhost:8888
+app:
+  client:
+    id: airport-c
+    secret: secret-c-456

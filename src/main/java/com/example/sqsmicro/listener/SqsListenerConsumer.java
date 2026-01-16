@@ -6,7 +6,7 @@ import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.service.XmlService;
 import com.example.sqsmicro.records.MessageDto;
-import com.example.sqsmicro.service.ConfigurationLoaderService;
+import com.example.sqsmicro.services.ConfigurationLoaderService;
 import com.example.sqsmicro.util.DecryptEncryptMessageUtil;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.extern.slf4j.Slf4j;
@@ -41,13 +41,13 @@ public class SqsListenerConsumer {
         this.configurationLoaderService = configurationLoaderService;
     }
 
-    @SqsListener(queueNames = "#{@configurationLoaderService.getListeningQueue()}")
+    @SqsListener(queueNames = "#{@configurationLoaderService.getMyListeningQueue()}")
     public void processMessage(MessageDto messageDto) {
         try {
             log.info("Reads encrypted messages. Metadata: {} | EncryptedPayload: {}", messageDto.metadata(), messageDto.encryptedPayload());
             // 1. DecryptPayload
-            String targetQueue = configurationLoaderService.getQueueUrl();
-            String receiverPubKey = configurationLoaderService.getAirportPublicKey();
+            String targetQueue = configurationLoaderService.getPeerTargetQueue("airlines-b");
+            String receiverPubKey = configurationLoaderService.getPeerPublicKey("airlines-b");
             decryptEncryptMessageUtil.loadPublicKey(receiverPubKey);
             String decryptPayload = decryptEncryptMessageUtil.decryptHybrid(messageDto.encryptedPayload(), messageDto.encryptedKey());
             // Log for tests without lobDebug

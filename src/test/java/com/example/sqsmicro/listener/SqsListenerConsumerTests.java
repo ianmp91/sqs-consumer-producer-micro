@@ -3,7 +3,7 @@ package com.example.sqsmicro.listener;
 import com.example.sqslib.builders.FlightLegBuilder;
 import com.example.sqslib.producer.SqsProducerService;
 import com.example.sqslib.service.XmlService;
-import com.example.sqsmicro.service.ConfigurationLoaderService;
+import com.example.sqsmicro.services.ConfigurationLoaderService;
 import com.example.sqsmicro.util.DecryptEncryptMessageUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
