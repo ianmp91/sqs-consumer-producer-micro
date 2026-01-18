@@ -9,9 +9,6 @@ WORKDIR /app
 # Copiamos el JAR compilado (asegúrate de hacer ./gradlew bootJar antes)
 COPY build/libs/*micro-0.1.0-SNAPSHOT.jar app.jar
 
-# Copiamos el public key
-COPY build/resources/main/public_key_b.pem src/main/resources/public_key_b.pem
-
 # Copiamos el private key
 COPY build/resources/main/private_key_c.pem src/main/resources/private_key_c.pem
 

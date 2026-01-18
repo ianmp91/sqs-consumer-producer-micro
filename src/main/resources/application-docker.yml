@@ -1,3 +1,5 @@
+server:
+  port: 8081
 logging:
   level:
     root: INFO # Mantiene librerías externas en INFO
@@ -13,14 +15,14 @@ spring:
         static: us-east-1 # Una región arbitraria
       # Configuración específica para SQS que apunta a ElasticMQ
       sqs:
-        endpoint: http://elasticmq:9324
+        endpoint: ${SPRING_CLOUD_AWS_SQS_ENDPOINT:http://localhost:9324}
       credentials:
         # Credenciales dummy que cumplen con el requisito del SDK de AWS
         access-key: dummy
         secret-key: dummy
 config:
   server:
-    url: http://localhost:8888
+    url: ${SPRING_CLOUD_CONFIGSERVER_ENDPOINT:http://localhost:8888}
 app:
   client:
     id: airport-c

@@ -22,7 +22,7 @@ spring:
         secret-key: dummy
 config:
   server:
-    url: http://localhost:8888
+    url: ${SPRING_CLOUD_CONFIGSERVER_ENDPOINT:http://localhost:8888}
 app:
   client:
     id: airport-c
